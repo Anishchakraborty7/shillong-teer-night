@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if the request is from an authenticated administrator
+    function isAdmin() {
+      return request.auth != null;
+    }
+
+    // currentResult collection - single document 'main'
+    // Public can read, only authenticated admin can write/update
+    match /currentResult/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // pastResults collection - archived results keyed by date
+    // Public can read, only authenticated admin can write/update
+    match /pastResults/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // commonNumbers collection - single document 'current'
+    // Public can read, only authenticated admin can write/update
+    match /commonNumbers/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Deny all other collections by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
