@@ -1,5 +1,5 @@
 import React from "react";
-import { formatDisplayDate, compareDatesDesc, toISODateString } from "../utils/dateUtils";
+import { formatDotDate, formatDisplayDate, compareDatesDesc, toISODateString } from "../utils/dateUtils";
 
 export function PastResults({ pastResults, currentResultDate, loading }) {
   if (loading) {
@@ -19,8 +19,7 @@ export function PastResults({ pastResults, currentResultDate, loading }) {
     );
   }
 
-  // Filter out the active today's result if present, to ensure 24h requirement:
-  // Today's result only belongs in Today's Result section until replaced on the next day.
+  // Filter out the active today's result if present
   const activeDateISO = currentResultDate ? toISODateString(currentResultDate) : "";
   const filteredPast = (pastResults || []).filter((item) => {
     if (!item || !item.date) return false;
@@ -43,43 +42,51 @@ export function PastResults({ pastResults, currentResultDate, loading }) {
           </div>
 
           {sortedPast.length > 0 ? (
-            <div className="past-results-list" role="feed" aria-label="Past Results History">
-              {sortedPast.map((item, idx) => {
-                // Extract numbers for past item
-                let numbers = [];
-                if (Array.isArray(item.numbers) && item.numbers.length > 0) {
-                  numbers = item.numbers.map(String).filter(Boolean);
-                } else if (typeof item.result === "string" && item.result.trim()) {
-                  numbers = item.result.split(",").map((s) => s.trim()).filter(Boolean);
-                } else if (item.firstRound || item.secondRound) {
-                  numbers = [item.firstRound, item.secondRound].filter(Boolean).map(String);
-                }
+            <div className="past-results-table-wrap" role="feed" aria-label="Past Results History">
+              <table className="past-rounds-table">
+                <thead>
+                  <tr>
+                    <th className="th-date">DATE</th>
+                    <th className="th-round">F/R (08:30 PM)</th>
+                    <th className="th-round">S/R (09:30 PM)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedPast.map((item, idx) => {
+                    let fVal = item.firstRound;
+                    let sVal = item.secondRound;
+                    let fTime = item.firstRoundTime || "08:30 PM";
+                    let sTime = item.secondRoundTime || "09:30 PM";
 
-                return (
-                  <article key={item.id || item.date || idx} className="past-result-item">
-                    <div className="past-date-header">
-                      <span className="past-date-text">
-                        {formatDisplayDate(item.date).toUpperCase()}
-                        {item.time && (
-                          <span className="past-time-tag"> ({item.time})</span>
-                        )}
-                      </span>
-                    </div>
+                    // Fallback to legacy structure if needed
+                    if (!fVal && !sVal) {
+                      if (Array.isArray(item.numbers) && item.numbers.length > 0) {
+                        fVal = item.numbers[0];
+                        sVal = item.numbers[1] || "--";
+                      } else if (typeof item.result === "string" && item.result.trim()) {
+                        const parts = item.result.split(",").map((s) => s.trim());
+                        fVal = parts[0] || "--";
+                        sVal = parts[1] || "--";
+                      }
+                    }
 
-                    <div className="past-result-values" aria-label={`Result: ${numbers.join(", ")}`}>
-                      {numbers.length > 0 ? (
-                        numbers.map((num, nIdx) => (
-                          <span key={nIdx} className="past-number-badge">
-                            {String(num)}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="past-number-badge">--</span>
-                      )}
-                    </div>
-                  </article>
-                );
-              })}
+                    return (
+                      <tr key={item.id || item.date || idx} className="past-round-row">
+                        <td className="td-date">
+                          <span className="dot-date">{formatDotDate(item.date)}</span>
+                          <span className="full-date-sub">{formatDisplayDate(item.date)}</span>
+                        </td>
+                        <td className="td-round">
+                          <span className="round-badge fr-badge">{fVal || "--"}</span>
+                        </td>
+                        <td className="td-round">
+                          <span className="round-badge sr-badge">{sVal || "--"}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           ) : (
             <div className="empty-state-container">

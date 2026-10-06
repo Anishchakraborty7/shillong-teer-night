@@ -1200,3 +1200,309 @@ body {
     justify-content: space-between;
   }
 }
+
+/* ==========================================================================
+   PHOTO 1: SHILLONG NIGHT TEER 2-ROUNDS RESULT BOX
+   ========================================================================== */
+.teer-result-box {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  max-width: 680px;
+  margin: 0 auto;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.teer-result-box:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+.teer-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.25rem;
+  background: #ffffff;
+  border-bottom: 1.5px solid #cbd5e1;
+  text-align: center;
+}
+
+.teer-moon-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.teer-box-title {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.teer-rounds-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #ffffff;
+}
+
+.teer-round-col {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.teer-round-col.col-fr {
+  border-right: 1.5px solid #cbd5e1;
+}
+
+.teer-round-head {
+  background: #f1f5f9;
+  border-bottom: 1.5px solid #cbd5e1;
+  padding: 0.85rem 1rem;
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #1e293b;
+}
+
+.teer-round-val {
+  background: #ffffff;
+  padding: 1.75rem 1rem;
+  font-family: var(--font-heading);
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   PHOTO 2: TARGET / COMMON NUMBERS BOX (DIRECT | HOUSE | ENDING)
+   ========================================================================== */
+.target-table-box {
+  background: #ffffff;
+  color: #111827;
+  border: 2px solid #0f172a;
+  border-radius: var(--radius-sm);
+  max-width: 680px;
+  margin: 0 auto;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.target-table-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: #0f172a;
+  text-align: center;
+  padding: 0.8rem 1rem;
+  background: #ffffff;
+  border-bottom: 2px solid #0f172a;
+}
+
+.target-table {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.target-table-row {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 1fr;
+  width: 100%;
+}
+
+.target-table-head {
+  background: #00d084; /* Cyan/Teal matching Photo 2 */
+  border-bottom: 2px solid #0f172a;
+}
+
+.target-table-th {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #052e16;
+  text-align: center;
+  padding: 0.85rem 0.5rem;
+  border-right: 2px solid #0f172a;
+  letter-spacing: 0.04em;
+}
+
+.target-table-th:last-child {
+  border-right: none;
+}
+
+.target-table-body {
+  background: #ffffff;
+}
+
+.target-table-td {
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-align: center;
+  padding: 1.2rem 0.5rem;
+  border-right: 2px solid #0f172a;
+  letter-spacing: 0.03em;
+}
+
+.target-table-td:last-child {
+  border-right: none;
+}
+
+/* ==========================================================================
+   PAST RESULTS 2-ROUNDS TABLE
+   ========================================================================== */
+.past-results-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.past-rounds-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.past-rounds-table thead th {
+  background: var(--bg-surface-elevated);
+  padding: 0.85rem 1rem;
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--cyan-subtle);
+  border-bottom: 2px solid var(--border-gold);
+  letter-spacing: 0.05em;
+}
+
+.past-rounds-table tbody tr {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.15s ease;
+}
+
+.past-rounds-table tbody tr:hover {
+  background: var(--bg-card-hover);
+}
+
+.past-rounds-table td {
+  padding: 0.9rem 1rem;
+  vertical-align: middle;
+}
+
+.td-date {
+  text-align: left;
+}
+
+.dot-date {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-white);
+  letter-spacing: 0.03em;
+}
+
+.full-date-sub {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+.round-badge {
+  display: inline-block;
+  min-width: 52px;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-align: center;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: var(--gold-bright);
+}
+
+/* ==========================================================================
+   ADMIN PANEL HELPERS & LIVE PREVIEWS
+   ========================================================================== */
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-form-grid .span-full {
+  grid-column: 1 / -1;
+}
+
+.round-fieldset {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.round-fieldset-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+  color: var(--text-white);
+}
+
+.round-tag {
+  background: var(--gold-primary);
+  color: #000;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+}
+
+.round-input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+.round-input-row .form-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-live-preview-box {
+  margin: 1.5rem 0 1rem;
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.preview-label {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+}
+
+.preview-mini {
+  transform: scale(0.96);
+  margin: 0 auto;
+}

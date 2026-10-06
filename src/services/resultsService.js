@@ -18,80 +18,164 @@ const LOCAL_STORAGE_KEY_PAST = "shillong_teer_past_results";
 const LOCAL_STORAGE_KEY_COMMON = "shillong_teer_common_numbers";
 
 /**
- * Normalizes results from various formats into a clean array of string numbers
- * and a comma-separated string (e.g. "23, 45")
+ * Normalizes 2-round result data (F/R and S/R)
  */
-export function extractResultData(data) {
-  if (!data) return { result: "", numbers: [] };
-
-  if (Array.isArray(data.numbers) && data.numbers.length > 0) {
-    const cleanNumbers = data.numbers.map((n) => String(n).trim()).filter(Boolean);
+export function extractRoundData(data) {
+  if (!data) {
     return {
-      result: data.result || cleanNumbers.join(", "),
-      numbers: cleanNumbers
+      firstRound: "--",
+      firstRoundTime: "08:30 PM",
+      secondRound: "--",
+      secondRoundTime: "09:30 PM"
     };
   }
 
-  if (typeof data.result === "string" && data.result.trim() !== "") {
-    const cleanNumbers = data.result
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    return {
-      result: data.result.trim(),
-      numbers: cleanNumbers
-    };
-  }
+  let firstRound =
+    data.firstRound !== undefined && data.firstRound !== null
+      ? String(data.firstRound).trim()
+      : "";
+  let secondRound =
+    data.secondRound !== undefined && data.secondRound !== null
+      ? String(data.secondRound).trim()
+      : "";
+  let firstRoundTime = String(
+    data.firstRoundTime || data.fRoundTime || data.time || "08:30 PM"
+  ).trim();
+  let secondRoundTime = String(
+    data.secondRoundTime || data.sRoundTime || "09:30 PM"
+  ).trim();
 
-  // Backwards compatibility with legacy firstRound / secondRound fields
-  const legacyParts = [];
-  if (data.firstRound !== undefined && data.firstRound !== "") {
-    legacyParts.push(String(data.firstRound).trim());
-  }
-  if (data.secondRound !== undefined && data.secondRound !== "") {
-    legacyParts.push(String(data.secondRound).trim());
+  // If firstRound/secondRound empty, extract from legacy arrays or result string
+  if (!firstRound && !secondRound) {
+    if (Array.isArray(data.numbers) && data.numbers.length > 0) {
+      firstRound = String(data.numbers[0] || "").trim();
+      secondRound = String(data.numbers[1] || "").trim();
+    } else if (typeof data.result === "string" && data.result.trim()) {
+      const parts = data.result
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      firstRound = parts[0] || "";
+      secondRound = parts[1] || "";
+    }
   }
 
   return {
-    result: legacyParts.join(", "),
-    numbers: legacyParts
+    firstRound: firstRound || "--",
+    firstRoundTime: firstRoundTime || "08:30 PM",
+    secondRound: secondRound || "--",
+    secondRoundTime: secondRoundTime || "09:30 PM"
+  };
+}
+
+/**
+ * Normalizes Target / Common Numbers data (Direct, House, Ending)
+ */
+export function extractCommonData(data) {
+  if (!data) {
+    return {
+      title: "SHILLONG",
+      direct: "48, 91",
+      house: "6",
+      ending: "2"
+    };
+  }
+
+  if (typeof data === "object" && !Array.isArray(data)) {
+    return {
+      title: String(data.title || "SHILLONG").trim(),
+      direct:
+        data.direct !== undefined && data.direct !== null && String(data.direct).trim() !== ""
+          ? String(data.direct).trim()
+          : Array.isArray(data.numbers) && data.numbers.length > 0
+          ? String(data.numbers[0])
+          : "--",
+      house:
+        data.house !== undefined && data.house !== null && String(data.house).trim() !== ""
+          ? String(data.house).trim()
+          : Array.isArray(data.numbers) && data.numbers.length > 1
+          ? String(data.numbers[1])
+          : "--",
+      ending:
+        data.ending !== undefined && data.ending !== null && String(data.ending).trim() !== ""
+          ? String(data.ending).trim()
+          : Array.isArray(data.numbers) && data.numbers.length > 2
+          ? String(data.numbers[2])
+          : "--"
+    };
+  }
+
+  if (Array.isArray(data)) {
+    return {
+      title: "SHILLONG",
+      direct: data.slice(0, 2).join(", ") || "--",
+      house: data[2] || "--",
+      ending: data[3] || "--"
+    };
+  }
+
+  return {
+    title: "SHILLONG",
+    direct: "48, 91",
+    house: "6",
+    ending: "2"
   };
 }
 
 // Initial seed data
 const DEFAULT_DEMO_CURRENT = {
   date: "2026-10-06",
-  time: "8.30 PM",
-  result: "23, 45",
-  numbers: ["23", "45"],
+  firstRound: "06",
+  firstRoundTime: "08:30 PM",
+  secondRound: "88",
+  secondRoundTime: "09:30 PM",
+  result: "06, 88",
+  numbers: ["06", "88"],
   updatedAt: new Date().toISOString()
 };
 
 const DEFAULT_DEMO_PAST = [
   {
+    id: "2026-10-05",
     date: "2026-10-05",
-    time: "8.30 PM",
-    result: "12, 67",
-    numbers: ["12", "67"],
+    firstRound: "06",
+    firstRoundTime: "08:30 PM",
+    secondRound: "88",
+    secondRoundTime: "09:30 PM",
+    result: "06, 88",
+    numbers: ["06", "88"],
     createdAt: "2026-10-05T18:00:00Z"
   },
   {
+    id: "2026-10-04",
     date: "2026-10-04",
-    time: "8.30 PM",
+    firstRound: "45",
+    firstRoundTime: "08:30 PM",
+    secondRound: "32",
+    secondRoundTime: "09:30 PM",
     result: "45, 32",
     numbers: ["45", "32"],
     createdAt: "2026-10-04T18:00:00Z"
   },
   {
+    id: "2026-10-03",
     date: "2026-10-03",
-    time: "8.30 PM",
-    result: "07",
-    numbers: ["07"],
+    firstRound: "07",
+    firstRoundTime: "08:30 PM",
+    secondRound: "61",
+    secondRoundTime: "09:30 PM",
+    result: "07, 61",
+    numbers: ["07", "61"],
     createdAt: "2026-10-03T18:00:00Z"
   }
 ];
 
-const DEFAULT_DEMO_COMMON = ["12", "27", "34", "45", "67"];
+const DEFAULT_DEMO_COMMON = {
+  title: "SHILLONG",
+  direct: "48, 91",
+  house: "6",
+  ending: "2"
+};
 
 /**
  * Gets the dataset from Cloud Bucket or Local Storage
@@ -137,22 +221,24 @@ async function getFullDataset() {
  */
 
 /**
- * Fetch the active Today's Result
+ * Fetch the active Today's Result (2 Rounds)
  */
 export async function fetchCurrentResult() {
-  // 1. Primary: Cloud Firestore if Firebase is configured
   if (isFirebaseConfigured && db) {
     try {
       const docRef = doc(db, "currentResult", "main");
       const snap = await getDoc(docRef);
       if (snap.exists()) {
         const data = snap.data();
-        const { result, numbers } = extractResultData(data);
+        const roundData = extractRoundData(data);
         return {
           date: String(data.date || ""),
-          time: String(data.time || "8.30 PM"),
-          result,
-          numbers,
+          firstRound: roundData.firstRound,
+          firstRoundTime: roundData.firstRoundTime,
+          secondRound: roundData.secondRound,
+          secondRoundTime: roundData.secondRoundTime,
+          result: `${roundData.firstRound}, ${roundData.secondRound}`,
+          numbers: [roundData.firstRound, roundData.secondRound],
           updatedAt: data.updatedAt
         };
       }
@@ -162,15 +248,17 @@ export async function fetchCurrentResult() {
     }
   }
 
-  // 2. Fallback: Cloud Bucket / Local Cache
   const dataset = await getFullDataset();
   if (dataset.currentResult) {
-    const { result, numbers } = extractResultData(dataset.currentResult);
+    const roundData = extractRoundData(dataset.currentResult);
     return {
       date: String(dataset.currentResult.date || ""),
-      time: String(dataset.currentResult.time || "8.30 PM"),
-      result,
-      numbers,
+      firstRound: roundData.firstRound,
+      firstRoundTime: roundData.firstRoundTime,
+      secondRound: roundData.secondRound,
+      secondRoundTime: roundData.secondRoundTime,
+      result: `${roundData.firstRound}, ${roundData.secondRound}`,
+      numbers: [roundData.firstRound, roundData.secondRound],
       updatedAt: dataset.currentResult.updatedAt
     };
   }
@@ -182,7 +270,6 @@ export async function fetchCurrentResult() {
  * Fetch Past Results list, sorted newest first
  */
 export async function fetchPastResults() {
-  // 1. Primary: Cloud Firestore if Firebase is configured
   if (isFirebaseConfigured && db) {
     try {
       const q = query(
@@ -194,13 +281,16 @@ export async function fetchPastResults() {
       const results = [];
       snap.forEach((docItem) => {
         const data = docItem.data();
-        const { result, numbers } = extractResultData(data);
+        const roundData = extractRoundData(data);
         results.push({
           id: docItem.id,
           date: String(data.date || docItem.id),
-          time: String(data.time || "8.30 PM"),
-          result,
-          numbers,
+          firstRound: roundData.firstRound,
+          firstRoundTime: roundData.firstRoundTime,
+          secondRound: roundData.secondRound,
+          secondRoundTime: roundData.secondRoundTime,
+          result: `${roundData.firstRound}, ${roundData.secondRound}`,
+          numbers: [roundData.firstRound, roundData.secondRound],
           createdAt: data.createdAt
         });
       });
@@ -211,16 +301,18 @@ export async function fetchPastResults() {
     }
   }
 
-  // 2. Fallback: Cloud Bucket / Local Cache
   const dataset = await getFullDataset();
   if (Array.isArray(dataset.pastResults) && dataset.pastResults.length > 0) {
     const list = dataset.pastResults.map((item) => {
-      const { result, numbers } = extractResultData(item);
+      const roundData = extractRoundData(item);
       return {
         ...item,
-        time: item.time || "8.30 PM",
-        result,
-        numbers
+        firstRound: roundData.firstRound,
+        firstRoundTime: roundData.firstRoundTime,
+        secondRound: roundData.secondRound,
+        secondRoundTime: roundData.secondRoundTime,
+        result: `${roundData.firstRound}, ${roundData.secondRound}`,
+        numbers: [roundData.firstRound, roundData.secondRound]
       };
     });
     list.sort((a, b) => compareDatesDesc(a.date, b.date));
@@ -231,30 +323,26 @@ export async function fetchPastResults() {
 }
 
 /**
- * Fetch Common Numbers list
+ * Fetch Common Numbers object { title, direct, house, ending }
  */
 export async function fetchCommonNumbers() {
-  // 1. Primary: Cloud Firestore if Firebase is configured
   if (isFirebaseConfigured && db) {
     try {
       const docRef = doc(db, "commonNumbers", "current");
       const snap = await getDoc(docRef);
       if (snap.exists()) {
         const data = snap.data();
-        if (Array.isArray(data.numbers)) {
-          return data.numbers.map((n) => String(n));
-        }
+        return extractCommonData(data);
       }
-      return [];
+      return DEFAULT_DEMO_COMMON;
     } catch (err) {
       console.warn("Firestore fetchCommonNumbers error, falling back:", err);
     }
   }
 
-  // 2. Fallback: Cloud Bucket / Local Cache
   const dataset = await getFullDataset();
-  if (Array.isArray(dataset.commonNumbers) && dataset.commonNumbers.length > 0) {
-    return dataset.commonNumbers.map(String);
+  if (dataset.commonNumbers) {
+    return extractCommonData(dataset.commonNumbers);
   }
 
   return DEFAULT_DEMO_COMMON;
@@ -267,37 +355,34 @@ export async function fetchCommonNumbers() {
  */
 
 /**
- * Updates Today's Result:
+ * Updates Today's 2-Round Result:
  * 1. Reads existing result
- * 2. If it is a new date, automatically archives previous result into pastResults
- * 3. Replaces currentResult with newResult
- * 4. Saves to Firestore (if configured) and Cloud Bucket / Local Storage
+ * 2. If advancing to a new date, atomically archives previous 2-round result into pastResults
+ * 3. Updates currentResult with new rounds
  */
-export async function updateTodayResult({ date, time, result }) {
+export async function updateTodayResult({
+  date,
+  firstRound,
+  firstRoundTime = "08:30 PM",
+  secondRound,
+  secondRoundTime = "09:30 PM"
+}) {
   const cleanDate = toISODateString(date);
-  const cleanTime = String(time ?? "").trim() || "8.30 PM";
-  const rawResult = String(result ?? "").trim();
+  const cleanFTime = String(firstRoundTime || "08:30 PM").trim();
+  const cleanSTime = String(secondRoundTime || "09:30 PM").trim();
+  const cleanFRound = String(firstRound ?? "").trim() || "--";
+  const cleanSRound = String(secondRound ?? "").trim() || "--";
 
   if (!cleanDate) {
     throw new Error("A valid date is required.");
   }
-  if (!rawResult) {
-    throw new Error("Game result number(s) are required (e.g. 23 or 23, 45).");
+  if (cleanFRound === "--" && cleanSRound === "--") {
+    throw new Error("Please enter at least one round result (F/R or S/R).");
   }
 
-  // Parse comma-separated numbers, preserving leading zeros (e.g. "07")
-  const cleanNumbers = rawResult
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const cleanResultString = `${cleanFRound}, ${cleanSRound}`;
+  const cleanNumbers = [cleanFRound, cleanSRound];
 
-  if (cleanNumbers.length === 0) {
-    throw new Error("Please enter at least one valid result number.");
-  }
-
-  const cleanResultString = cleanNumbers.join(", ");
-
-  // 1. Primary: Write to Cloud Firestore using atomic transaction
   if (isFirebaseConfigured && db) {
     const currentDocRef = doc(db, "currentResult", "main");
 
@@ -311,15 +396,18 @@ export async function updateTodayResult({ date, time, result }) {
         // If advancing to a NEW date, archive previous result into pastResults
         if (existingDate && existingDate !== cleanDate) {
           const pastDocRef = doc(db, "pastResults", existingDate);
-          const { result: prevResult, numbers: prevNumbers } = extractResultData(existingData);
+          const prevRounds = extractRoundData(existingData);
 
           transaction.set(
             pastDocRef,
             {
               date: existingDate,
-              time: String(existingData.time || cleanTime),
-              result: prevResult,
-              numbers: prevNumbers,
+              firstRound: prevRounds.firstRound,
+              firstRoundTime: prevRounds.firstRoundTime,
+              secondRound: prevRounds.secondRound,
+              secondRoundTime: prevRounds.secondRoundTime,
+              result: `${prevRounds.firstRound}, ${prevRounds.secondRound}`,
+              numbers: [prevRounds.firstRound, prevRounds.secondRound],
               createdAt: existingData.updatedAt || serverTimestamp()
             },
             { merge: true }
@@ -330,64 +418,68 @@ export async function updateTodayResult({ date, time, result }) {
       // Update currentResult/main
       transaction.set(currentDocRef, {
         date: cleanDate,
-        time: cleanTime,
+        firstRound: cleanFRound,
+        firstRoundTime: cleanFTime,
+        secondRound: cleanSRound,
+        secondRoundTime: cleanSTime,
         result: cleanResultString,
         numbers: cleanNumbers,
         updatedAt: serverTimestamp()
       });
     });
 
-    // Also mirror to local storage
-    localStorage.setItem(LOCAL_STORAGE_KEY_CURRENT, JSON.stringify({
+    const payload = {
       date: cleanDate,
-      time: cleanTime,
-      result: cleanResultString,
-      numbers: cleanNumbers
-    }));
-
-    return {
-      date: cleanDate,
-      time: cleanTime,
+      firstRound: cleanFRound,
+      firstRoundTime: cleanFTime,
+      secondRound: cleanSRound,
+      secondRoundTime: cleanSTime,
       result: cleanResultString,
       numbers: cleanNumbers
     };
+
+    localStorage.setItem(LOCAL_STORAGE_KEY_CURRENT, JSON.stringify(payload));
+    return payload;
   }
 
-  // 2. Fallback: Cloud Bucket & Local Storage
+  // Fallback: Cloud Bucket & Local Storage
   const dataset = await getFullDataset();
   const prevCurrent = dataset.currentResult || DEFAULT_DEMO_CURRENT;
   const prevDate = toISODateString(prevCurrent.date);
 
-  let updatedPast = Array.isArray(dataset.pastResults) ? [...dataset.pastResults] : [...DEFAULT_DEMO_PAST];
+  let updatedPast = Array.isArray(dataset.pastResults)
+    ? [...dataset.pastResults]
+    : [...DEFAULT_DEMO_PAST];
 
   if (prevDate && prevDate !== cleanDate) {
-    const { result: prevResult, numbers: prevNumbers } = extractResultData(prevCurrent);
+    const prevRounds = extractRoundData(prevCurrent);
     const alreadyExists = updatedPast.some((item) => toISODateString(item.date) === prevDate);
+    const pastEntry = {
+      date: prevDate,
+      firstRound: prevRounds.firstRound,
+      firstRoundTime: prevRounds.firstRoundTime,
+      secondRound: prevRounds.secondRound,
+      secondRoundTime: prevRounds.secondRoundTime,
+      result: `${prevRounds.firstRound}, ${prevRounds.secondRound}`,
+      numbers: [prevRounds.firstRound, prevRounds.secondRound],
+      createdAt: new Date().toISOString()
+    };
+
     if (!alreadyExists) {
-      updatedPast.unshift({
-        date: prevDate,
-        time: String(prevCurrent.time || cleanTime),
-        result: prevResult,
-        numbers: prevNumbers,
-        createdAt: new Date().toISOString()
-      });
+      updatedPast.unshift(pastEntry);
     } else {
       updatedPast = updatedPast.map((item) =>
-        toISODateString(item.date) === prevDate
-          ? {
-              ...item,
-              time: String(prevCurrent.time || cleanTime),
-              result: prevResult,
-              numbers: prevNumbers
-            }
-          : item
+        toISODateString(item.date) === prevDate ? { ...item, ...pastEntry } : item
       );
     }
   }
 
   const newCurrent = {
     date: cleanDate,
-    time: cleanTime,
+    firstRound: cleanFRound,
+    firstRoundTime: cleanFTime,
+    secondRound: cleanSRound,
+    secondRoundTime: cleanSTime,
     result: cleanResultString,
     numbers: cleanNumbers,
     updatedAt: new Date().toISOString()
@@ -408,39 +500,42 @@ export async function updateTodayResult({ date, time, result }) {
 
 /**
  * Updates Common Numbers:
- * Replaces common numbers document and syncs.
+ * Replaces target common data { title, direct, house, ending }
  */
-export async function updateCommonNumbers(numbersArray) {
-  const cleanNumbers = (numbersArray || [])
-    .map((n) => String(n).trim())
-    .filter((n) => n !== "");
+export async function updateCommonNumbers({ title, direct, house, ending }) {
+  const cleanTitle = String(title || "SHILLONG").trim() || "SHILLONG";
+  const cleanDirect = String(direct ?? "").trim() || "--";
+  const cleanHouse = String(house ?? "").trim() || "--";
+  const cleanEnding = String(ending ?? "").trim() || "--";
 
-  if (cleanNumbers.length === 0) {
-    throw new Error("Please provide at least one common number.");
-  }
+  const payload = {
+    title: cleanTitle,
+    direct: cleanDirect,
+    house: cleanHouse,
+    ending: cleanEnding
+  };
 
-  // 1. Primary: Cloud Firestore if configured
   if (isFirebaseConfigured && db) {
     const docRef = doc(db, "commonNumbers", "current");
     await runTransaction(db, async (transaction) => {
       transaction.set(docRef, {
-        numbers: cleanNumbers,
+        ...payload,
+        numbers: [cleanDirect, cleanHouse, cleanEnding],
         updatedAt: serverTimestamp()
       });
     });
-    localStorage.setItem(LOCAL_STORAGE_KEY_COMMON, JSON.stringify(cleanNumbers));
-    return cleanNumbers;
+    localStorage.setItem(LOCAL_STORAGE_KEY_COMMON, JSON.stringify(payload));
+    return payload;
   }
 
-  // 2. Fallback: Cloud Bucket & Local Storage
   const dataset = await getFullDataset();
   const updatedDataset = {
     ...dataset,
-    commonNumbers: cleanNumbers
+    commonNumbers: payload
   };
 
   await saveToCloud(updatedDataset);
-  localStorage.setItem(LOCAL_STORAGE_KEY_COMMON, JSON.stringify(cleanNumbers));
+  localStorage.setItem(LOCAL_STORAGE_KEY_COMMON, JSON.stringify(payload));
 
-  return cleanNumbers;
+  return payload;
 }

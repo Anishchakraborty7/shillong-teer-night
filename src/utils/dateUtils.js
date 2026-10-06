@@ -116,3 +116,16 @@ export function compareDatesDesc(a, b) {
   if (isoA < isoB) return 1;
   return 0;
 }
+
+/**
+ * Format date input into DD.MM.YYYY string (e.g. "05.10.2026")
+ */
+export function formatDotDate(input) {
+  if (!input) return "";
+  const iso = toISODateString(input);
+  if (typeof iso === "string" && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const [year, month, day] = iso.split("-");
+    return `${day}.${month}.${year}`;
+  }
+  return String(input);
+}

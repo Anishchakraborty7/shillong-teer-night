@@ -5,45 +5,66 @@ export function CommonNumbers({ commonNumbers, loading }) {
     return (
       <section id="common-numbers" className="section-block">
         <div className="section-container">
-          <div className="content-card loading-skeleton-card">
+          <div className="target-table-box loading-skeleton-card">
             <div className="skeleton-title small"></div>
-            <div className="skeleton-pills-row">
-              <div className="skeleton-pill-circle"></div>
-              <div className="skeleton-pill-circle"></div>
-              <div className="skeleton-pill-circle"></div>
-              <div className="skeleton-pill-circle"></div>
-              <div className="skeleton-pill-circle"></div>
-            </div>
+            <div className="skeleton-box" style={{ height: "100px" }}></div>
           </div>
         </div>
       </section>
     );
   }
 
-  const hasNumbers = Array.isArray(commonNumbers) && commonNumbers.length > 0;
+  // Safe normalization of data
+  let title = "SHILLONG";
+  let direct = "48, 91";
+  let house = "6";
+  let ending = "2";
+
+  if (commonNumbers && typeof commonNumbers === "object") {
+    if (Array.isArray(commonNumbers)) {
+      direct = commonNumbers.slice(0, 2).join(", ") || "--";
+      house = commonNumbers[2] || "--";
+      ending = commonNumbers[3] || "--";
+    } else {
+      title = commonNumbers.title || "SHILLONG";
+      direct = commonNumbers.direct || "--";
+      house = commonNumbers.house || "--";
+      ending = commonNumbers.ending || "--";
+    }
+  }
 
   return (
     <section id="common-numbers" className="section-block">
       <div className="section-container">
-        <div className="content-card common-numbers-card">
-          <div className="section-header-compact">
-            <h2 className="section-heading">COMMON NUMBERS</h2>
-            <div className="heading-accent-line"></div>
+        {/* Match Image 2 exact structure */}
+        <div className="target-table-box" aria-label="Shillong Target Common Numbers">
+          {/* Top Title: SHILLONG */}
+          <div className="target-table-title">
+            {title.toUpperCase()}
           </div>
 
-          {hasNumbers ? (
-            <div className="numbers-grid" aria-label="Current Common Numbers">
-              {commonNumbers.map((num, idx) => (
-                <div key={idx} className="number-token" title={`Common Number #${idx + 1}`}>
-                  <span className="token-value">{String(num)}</span>
-                </div>
-              ))}
+          {/* Table Container */}
+          <div className="target-table">
+            {/* Headers row (Cyan background: Direct | House | Ending) */}
+            <div className="target-table-row target-table-head">
+              <div className="target-table-th">Direct</div>
+              <div className="target-table-th">House</div>
+              <div className="target-table-th">Ending</div>
             </div>
-          ) : (
-            <div className="empty-state-container">
-              <p className="empty-state-text">Common numbers will be updated soon.</p>
+
+            {/* Values row */}
+            <div className="target-table-row target-table-body">
+              <div className="target-table-td" aria-label={`Direct numbers: ${direct}`}>
+                {direct}
+              </div>
+              <div className="target-table-td" aria-label={`House: ${house}`}>
+                {house}
+              </div>
+              <div className="target-table-td" aria-label={`Ending: ${ending}`}>
+                {ending}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </section>
