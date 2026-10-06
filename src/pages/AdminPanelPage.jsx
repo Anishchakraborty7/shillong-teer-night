@@ -2,18 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Logo from "../components/Logo";
 import { useAuth } from "../hooks/useAuth";
-import { setAdminPassword } from "../firebase/auth";
 import {
   fetchCurrentResult,
   fetchCommonNumbers,
   updateTodayResult,
   updateCommonNumbers
 } from "../services/resultsService";
-import {
-  getCloudConfig,
-  saveCloudConfig,
-  testCloudConnection
-} from "../services/cloudStorageService";
 import { getTodayISODate, formatDisplayDate } from "../utils/dateUtils";
 
 export function AdminPanelPage() {
@@ -31,16 +25,6 @@ export function AdminPanelPage() {
   const [commonNumbers, setCommonNumbers] = useState(["", "", "", "", ""]);
   const [savingCommon, setSavingCommon] = useState(false);
   const [commonMessage, setCommonMessage] = useState(null);
-
-  // Cloud Storage Settings State
-  const [cloudSettingsOpen, setCloudSettingsOpen] = useState(false);
-  const [cloudConfig, setCloudConfig] = useState(getCloudConfig());
-  const [testingCloud, setTestingCloud] = useState(false);
-  const [cloudStatusMsg, setCloudStatusMsg] = useState(null);
-
-  // Password Change State
-  const [newPassword, setNewPassword] = useState("");
-  const [passwordMsg, setPasswordMsg] = useState(null);
 
   // Initial data load state
   const [initialLoading, setInitialLoading] = useState(true);
@@ -194,44 +178,6 @@ export function AdminPanelPage() {
     }
   };
 
-  // Handle Cloud Settings Test & Save
-  const handleSaveCloudSettings = async (e) => {
-    e.preventDefault();
-    setTestingCloud(true);
-    setCloudStatusMsg(null);
-
-    try {
-      const test = await testCloudConnection(cloudConfig);
-      saveCloudConfig(cloudConfig);
-
-      if (test.success) {
-        setCloudStatusMsg({ type: "success", text: test.message });
-      } else {
-        setCloudStatusMsg({
-          type: "error",
-          text: test.message || "Saved, but connection could not be verified."
-        });
-      }
-    } catch (err) {
-      setCloudStatusMsg({ type: "error", text: `Error: ${err.message}` });
-    } finally {
-      setTestingCloud(false);
-    }
-  };
-
-  // Handle Change Password
-  const handleChangePassword = (e) => {
-    e.preventDefault();
-    setPasswordMsg(null);
-    try {
-      setAdminPassword(newPassword);
-      setPasswordMsg({ type: "success", text: "Admin password updated successfully!" });
-      setNewPassword("");
-    } catch (err) {
-      setPasswordMsg({ type: "error", text: err.message });
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -261,10 +207,7 @@ export function AdminPanelPage() {
             <div>
               <h1 className="admin-title">SHILLONG TEER NIGHT ADMIN</h1>
               <span className="admin-user-badge">
-                Logged in as: {user?.email || "Administrator"} •{" "}
-                <span style={{ color: cloudConfig.isConfigured ? "#10B981" : "#F59E0B" }}>
-                  {cloudConfig.isConfigured ? "☁️ Cloud Synced" : "💾 Local Storage Mode"}
-                </span>
+                Logged in as: {user?.email || "Administrator"}
               </span>
             </div>
           </div>
@@ -419,121 +362,6 @@ export function AdminPanelPage() {
               </button>
             </div>
           </form>
-        </section>
-
-        {/* SECTION 3: ZERO-BACKEND CLOUD SYNC & SETTINGS */}
-        <section className="admin-section-box">
-          <div className="admin-section-title-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <h2 className="admin-section-heading">☁️ CLOUD SYNC & SETTINGS (ZERO BACKEND)</h2>
-              <span className="admin-section-hint">
-                Syncs results instantly across all 100 mobile visitors for free without managing any backend or Firebase.
-              </span>
-            </div>
-            <button
-              type="button"
-              className="admin-btn secondary-btn"
-              onClick={() => setCloudSettingsOpen(!cloudSettingsOpen)}
-              style={{ fontSize: "0.82rem", padding: "0.4rem 0.8rem" }}
-            >
-              {cloudSettingsOpen ? "Hide Settings ▲" : "Configure Cloud ▼"}
-            </button>
-          </div>
-
-          {cloudSettingsOpen && (
-            <div style={{ marginTop: "1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-              {/* Cloud Sync Setup */}
-              <div style={{ background: "var(--bg-surface)", padding: "1.25rem", borderRadius: "var(--radius-md)", border: "1px solid var(--border-subtle)" }}>
-                <h3 style={{ fontSize: "1rem", color: "var(--gold-bright)", marginBottom: "0.5rem" }}>
-                  Free Cloud Storage Bucket
-                </h3>
-                <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1rem" }}>
-                  To let all visitors on their phones see your daily updates without Firebase, use a free Pantry ID from{" "}
-                  <a
-                    href="https://getpantry.cloud"
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ color: "var(--cyan-subtle)", textDecoration: "underline" }}
-                  >
-                    getpantry.cloud
-                  </a>{" "}
-                  (takes 10 seconds, 100% free forever, zero database setup).
-                </p>
-
-                {cloudStatusMsg && (
-                  <div className={`admin-alert ${cloudStatusMsg.type}-alert`} role="alert">
-                    {cloudStatusMsg.text}
-                  </div>
-                )}
-
-                <form onSubmit={handleSaveCloudSettings} className="admin-form">
-                  <div className="form-group">
-                    <label htmlFor="pantryId" className="form-label">
-                      Pantry ID (from getpantry.cloud)
-                    </label>
-                    <input
-                      id="pantryId"
-                      type="text"
-                      className="form-input"
-                      value={cloudConfig.pantryId}
-                      onChange={(e) =>
-                        setCloudConfig({ ...cloudConfig, pantryId: e.target.value, provider: "pantry" })
-                      }
-                      placeholder="e.g. b2d9841f-..."
-                    />
-                    <span className="input-hint">
-                      Once connected, every time you click "Update Result", it automatically syncs to all visitors.
-                    </span>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="admin-btn primary-btn"
-                    disabled={testingCloud}
-                    style={{ alignSelf: "flex-start" }}
-                  >
-                    {testingCloud ? "TESTING CONNECTION..." : "SAVE & CONNECT CLOUD"}
-                  </button>
-                </form>
-              </div>
-
-              {/* Change Admin Password */}
-              <div style={{ background: "var(--bg-surface)", padding: "1.25rem", borderRadius: "var(--radius-md)", border: "1px solid var(--border-subtle)" }}>
-                <h3 style={{ fontSize: "1rem", color: "var(--text-white)", marginBottom: "0.5rem" }}>
-                  Change Admin Password
-                </h3>
-                <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1rem" }}>
-                  Default password is <code>admin123</code>. You can change it here anytime.
-                </p>
-
-                {passwordMsg && (
-                  <div className={`admin-alert ${passwordMsg.type}-alert`} role="alert">
-                    {passwordMsg.text}
-                  </div>
-                )}
-
-                <form onSubmit={handleChangePassword} className="admin-form" style={{ maxWidth: "340px" }}>
-                  <div className="form-group">
-                    <label htmlFor="newPassword" className="form-label">
-                      New Admin Password
-                    </label>
-                    <input
-                      id="newPassword"
-                      type="password"
-                      className="form-input"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Enter new password"
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="admin-btn secondary-btn" style={{ alignSelf: "flex-start" }}>
-                    Update Password
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
         </section>
 
         {/* Footer Logout */}
